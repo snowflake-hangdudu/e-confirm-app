@@ -12,9 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSession } from '../context/SessionContext';
 import { ScreenBackground } from '../components/ScreenBackground';
-import { colors, spacing } from '../theme';
+import { colors, radius, spacing } from '../theme';
 import { formInputBoxed } from '../styles/form';
 import { hasWebQaParam } from '../utils/webQuery';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function LoginScreen() {
   const { login } = useSession();
@@ -59,11 +60,9 @@ export function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.hero}>
-              <View style={styles.shield}>
-                <Text style={styles.shieldText}>e</Text>
-              </View>
+              <BrandLogo size={64} />
               <Text style={styles.brand}>e确镜</Text>
-              <Text style={styles.sub}>手术部位安全确认 · 院内系统</Text>
+              <Text style={styles.sub}>手术部位安全确认</Text>
             </View>
 
             <View style={styles.card}>
@@ -74,19 +73,19 @@ export function LoginScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 placeholder="请输入账号"
-                placeholderTextColor={colors.muted}
+                placeholderTextColor={colors.weak}
                 value={username}
                 onChangeText={(v) => {
                   setUsername(v);
                   setError('');
                 }}
               />
-              <Text style={[styles.label, { marginTop: 14 }]}>密码</Text>
+              <Text style={[styles.label, styles.labelGap]}>密码</Text>
               <TextInput
                 style={styles.input}
                 secureTextEntry
                 placeholder="请输入密码"
-                placeholderTextColor={colors.muted}
+                placeholderTextColor={colors.weak}
                 value={password}
                 onChangeText={(v) => {
                   setPassword(v);
@@ -113,66 +112,80 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 24,
   },
   hero: {
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: 36,
   },
-  shield: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  shieldText: { color: '#fff', fontSize: 28, fontWeight: '700' },
   brand: {
-    fontSize: 28,
-    fontWeight: '800',
+    marginTop: 8,
+    fontSize: 24,
+    fontWeight: '600',
     color: colors.ink,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
-  sub: { marginTop: 6, fontSize: 13, color: colors.muted, textAlign: 'center' },
+  sub: {
+    marginTop: 8,
+    fontSize: 14,
+    color: colors.muted,
+    textAlign: 'center',
+  },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: spacing.lg,
+    borderRadius: radius.card,
+    padding: 24,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.lineSoft,
+    shadowColor: 'rgb(24, 55, 80)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 1,
   },
   cardTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.ink,
-    marginBottom: spacing.md,
+    marginBottom: 24,
   },
-  label: { fontSize: 12, color: colors.muted, marginBottom: 6 },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.label,
+    marginBottom: 8,
+  },
+  labelGap: {
+    marginTop: 18,
+  },
   input: formInputBoxed,
   error: {
     color: colors.danger,
-    marginTop: 10,
-    fontSize: 13,
-    fontWeight: '600',
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '500',
   },
   cta: {
-    marginTop: spacing.lg,
+    marginTop: 24,
+    height: 50,
     backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: radius.button,
     alignItems: 'center',
+    justifyContent: 'center',
     width: '100%',
   },
-  ctaText: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  ctaText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   footerHint: {
-    marginTop: spacing.lg,
+    marginTop: 16,
     textAlign: 'center',
     fontSize: 12,
-    color: colors.muted,
-    opacity: 0.85,
+    color: colors.weak,
   },
 });

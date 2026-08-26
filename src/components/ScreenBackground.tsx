@@ -12,22 +12,22 @@ type Props = {
 
 const TINT: Record<Variant, { top: string; mid: string; blobA: string; blobB: string }> = {
   default: {
-    top: '#DCEAF4',
-    mid: '#F3F7FA',
-    blobA: '#B7D3E8',
-    blobB: '#C3DBD4',
+    top: '#E8EEF3',
+    mid: '#F5F7F9',
+    blobA: '#D5E3EE',
+    blobB: '#DDE8E4',
   },
   login: {
-    top: '#CDE3F2',
-    mid: '#EEF5FA',
-    blobA: '#A9CBE2',
-    blobB: '#BFD8D2',
+    top: '#EAF1F6',
+    mid: '#F5F7F9',
+    blobA: '#D7E5EF',
+    blobB: '#DEE8E5',
   },
   calm: {
-    top: '#D7E8EF',
-    mid: '#F2F7F9',
-    blobA: '#B4CFDC',
-    blobB: '#C5D9D2',
+    top: '#E7EEF2',
+    mid: '#F5F7F9',
+    blobA: '#D4E0E8',
+    blobB: '#DCE6E2',
   },
 };
 
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: '42%',
-    opacity: 0.9,
+    opacity: 0.45,
     pointerEvents: 'none',
   },
   content: {
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   blob: {
     position: 'absolute',
     borderRadius: 999,
-    opacity: 0.32,
+    opacity: 0.22,
     pointerEvents: 'none',
   },
   blobTop: {

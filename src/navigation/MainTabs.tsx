@@ -16,7 +16,7 @@ export function MainTabs() {
   const bottomPad = Platform.OS === 'web' ? 8 : Math.max(insets.bottom, 8);
   const tabBarStyle = {
     ...styles.tabBar,
-    height: Platform.OS === 'web' ? 64 : 50 + bottomPad,
+    height: Platform.OS === 'web' ? 64 : 62 + bottomPad,
     paddingBottom: bottomPad,
     ...(Platform.OS === 'web'
       ? { position: 'relative' as const, bottom: 'auto' as const }
@@ -34,7 +34,7 @@ export function MainTabs() {
         headerShown: false,
         tabBarStyle,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.muted,
+        tabBarInactiveTintColor: colors.tabInactive,
         tabBarItemStyle: styles.tabItem,
         tabBarHideOnKeyboard: true,
       }}
@@ -83,18 +83,20 @@ export function MainTabs() {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: colors.surface,
-    borderTopColor: colors.line,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 4,
+    borderTopColor: colors.tabLine,
+    borderTopWidth: 1,
+    elevation: 0,
+    shadowOpacity: 0,
+    paddingTop: 8,
   },
   tabItem: {
     paddingTop: 0,
   },
   tabLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    lineHeight: 14,
-    marginTop: 1,
+    fontSize: 12,
+    fontWeight: '500',
+    lineHeight: 16,
+    marginTop: 4,
     marginBottom: 0,
     includeFontPadding: false,
     textAlign: 'center',

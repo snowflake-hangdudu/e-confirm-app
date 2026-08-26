@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSession } from '../context/SessionContext';
-import { ScreenBackground } from '../components/ScreenBackground';
-import { colors, spacing } from '../theme';
+import { colors, radius } from '../theme';
 import { MainTabParamList } from '../types';
 import { showAlert } from '../utils/showAlert';
+import { BrandLogo } from '../components/BrandLogo';
 
 type Props = BottomTabScreenProps<MainTabParamList, 'Mine'>;
 
@@ -21,89 +21,136 @@ export function MineScreen(_props: Props) {
   };
 
   return (
-    <ScreenBackground variant="login">
-      <SafeAreaView style={styles.safe}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+    <View style={styles.root}>
+      <View style={styles.header}>
+        <SafeAreaView edges={['top']}>
           <View style={styles.brandBlock}>
-            <View style={styles.shield}>
-              <Text style={styles.shieldText}>e</Text>
-            </View>
+            <BrandLogo size={72} />
             <Text style={styles.brand}>e确镜</Text>
             <Text style={styles.slogan}>我的手术，我确认</Text>
           </View>
+        </SafeAreaView>
+      </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>账号信息</Text>
-            <View style={styles.row}>
-              <Text style={styles.k}>当前登录</Text>
-              <Text style={styles.v}>{staffUsername || '—'}</Text>
-            </View>
-            <View style={[styles.row, { borderBottomWidth: 0 }]}>
-              <Text style={styles.k}>核对护士</Text>
-              <Text style={styles.v}>{session.nurseName || '—'}</Text>
-            </View>
+      <ScrollView
+        style={styles.body}
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.sectionTitle}>账号信息</Text>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Text style={styles.k}>当前登录</Text>
+            <Text style={styles.v}>{staffUsername || '—'}</Text>
           </View>
+          <View style={[styles.row, styles.rowLast]}>
+            <Text style={styles.k}>核对护士</Text>
+            <Text style={styles.v}>{session.nurseName || '—'}</Text>
+          </View>
+        </View>
 
-          <Pressable style={styles.logoutBtn} onPress={onLogout}>
-            <Text style={styles.logoutText}>退出登录</Text>
-          </Pressable>
-        </ScrollView>
-      </SafeAreaView>
-    </ScreenBackground>
+        <Pressable
+          style={({ pressed }) => [styles.logoutBtn, pressed && styles.logoutPressed]}
+          onPress={onLogout}
+        >
+          <Text style={styles.logoutText}>退出登录</Text>
+        </Pressable>
+
+        <Text style={styles.version}>e确镜 · V1.0</Text>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: 'transparent' },
-  scroll: { padding: spacing.lg, paddingBottom: 40 },
+  root: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  header: {
+    backgroundColor: colors.surface,
+  },
   brandBlock: {
     alignItems: 'center',
-    paddingVertical: spacing.xl,
-    marginBottom: spacing.md,
+    paddingTop: 40,
+    paddingBottom: 24,
   },
-  shield: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
+  brand: {
+    marginTop: 8,
+    fontSize: 22,
+    fontWeight: '600',
+    color: colors.ink,
   },
-  shieldText: { color: '#fff', fontSize: 36, fontWeight: '700' },
-  brand: { fontSize: 28, fontWeight: '800', color: colors.ink, letterSpacing: 1 },
-  slogan: { fontSize: 14, color: colors.muted, marginTop: 6 },
+  slogan: {
+    marginTop: 8,
+    fontSize: 14,
+    color: colors.muted,
+  },
+  body: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  scroll: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.ink,
+    marginBottom: 10,
+  },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 14,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
+    borderRadius: radius.cardSm,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderWidth: 1,
     borderColor: colors.line,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.ink,
-    marginBottom: 4,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
+    alignItems: 'center',
+    minHeight: 46,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.line,
   },
-  k: { fontSize: 14, color: colors.muted },
-  v: { fontSize: 15, fontWeight: '600', color: colors.ink },
-  logoutBtn: {
-    marginTop: spacing.xl,
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.danger,
+  rowLast: {
+    borderBottomWidth: 0,
   },
-  logoutText: { color: colors.danger, fontSize: 16, fontWeight: '700' },
+  k: {
+    fontSize: 14,
+    color: colors.muted,
+  },
+  v: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.ink,
+  },
+  logoutBtn: {
+    marginTop: 24,
+    height: 48,
+    backgroundColor: colors.surface,
+    borderRadius: radius.tab,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E1E7ED',
+  },
+  logoutPressed: {
+    backgroundColor: colors.dangerSoft,
+  },
+  logoutText: {
+    color: colors.danger,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  version: {
+    marginTop: 32,
+    textAlign: 'center',
+    fontSize: 12,
+    color: colors.weak,
+  },
 });
