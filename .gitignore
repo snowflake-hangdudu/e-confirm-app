@@ -31,7 +31,13 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+docs/server.secrets.local.md
+
+# debug / scratch
+bundle-error.txt
+src/screens/_enc_test.txt
 
 # typescript
 *.tsbuildinfo
