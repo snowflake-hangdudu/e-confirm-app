@@ -7,11 +7,15 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { colors } from '../theme';
+import { getWebSearchParam } from '../utils/webQuery';
 
 /** 竖屏手机参考比例（宽/高） */
 const PHONE_ASPECT = 414 / 896;
 const MIN_W = 320;
 const MAX_W = 430;
+/** iPad 竖屏常用画幅，用于 Web 预览平板样式 */
+const TABLET_W = 768;
+const TABLET_H = 1024;
 
 type Props = { children: React.ReactNode };
 
@@ -26,8 +30,44 @@ export function PhoneShell({ children }: Props) {
     return <>{children}</>;
   }
 
+  const tabletPreview = getWebSearchParam('tablet') != null;
   const availW = Math.max(280, width - 32);
   const availH = Math.max(420, height - 56);
+  const bezelPad = 8;
+
+  if (tabletPreview) {
+    const scale = Math.min(1, availW / TABLET_W, availH / TABLET_H);
+    return (
+      <View style={styles.desk}>
+        <Text style={styles.caption}>
+          平板竖屏预览 · iPad {TABLET_W}×{TABLET_H}
+        </Text>
+        <View
+          style={{
+            width: TABLET_W * scale + bezelPad * 2,
+            height: TABLET_H * scale + bezelPad * 2,
+            overflow: 'hidden',
+          }}
+        >
+          <View
+            style={[
+              styles.bezel,
+              {
+                width: TABLET_W + bezelPad * 2,
+                height: TABLET_H + bezelPad * 2,
+                transform: [{ scale }],
+                transformOrigin: 'top left',
+              } as object,
+            ]}
+          >
+            <View style={[styles.screen, { width: TABLET_W, height: TABLET_H }]}>
+              <View style={styles.fill}>{children}</View>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   // 先按高度吃满，再被宽度/比例夹住
   let frameH = availH;
@@ -45,7 +85,6 @@ export function PhoneShell({ children }: Props) {
 
   frameW = Math.round(frameW);
   frameH = Math.round(frameH);
-  const bezelPad = 8;
 
   return (
     <View style={styles.desk}>

@@ -13,6 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   SafeAreaView,
+  initialWindowMetrics,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { BodyMap } from '../components/BodyMap';
@@ -31,7 +32,7 @@ import { speakSiteConfirm, stopSiteSpeech } from '../utils/speech';
 import { getWebSearchParam } from '../utils/webQuery';
 import { showAlert } from '../utils/showAlert';
 import { appendConfirmRecord } from '../data/confirmRecords';
-import { uploadRecords } from '../api/server';
+import { uploadRecords, syncConfirmRecordsToServer } from '../api/server';
 import { signaturePathsToDataUrl } from '../utils/signatureImage';
 
 type Props = NativeStackScreenProps<ConfirmStackParamList, 'ConfirmSite'>;
@@ -39,9 +40,14 @@ type Props = NativeStackScreenProps<ConfirmStackParamList, 'ConfirmSite'>;
 export function ConfirmSiteScreen({ navigation }: Props) {
   const { session, update, reset } = useSession();
   const insets = useSafeAreaInsets();
-  const { height: winH } = useWindowDimensions();
-  /** 人体图固定高度：标签 1～3 行变高时只加长页面，不挤图 */
-  const mapHeight = Math.max(300, Math.min(420, Math.round(winH * 0.48)));
+  const { height: liveH, width: winW } = useWindowDimensions();
+  /** 键盘收起时 window 高度会回弹，人体图按启动时的窗口高度计算，避免进页弹一下 */
+  const winH = Math.max(liveH, initialWindowMetrics?.frame.height ?? liveH);
+  const isTablet = Math.min(winW, winH) >= 600;
+  /** 人体图高度：手机保持原区间；平板抬高，但不挤掉底部操作区 */
+  const mapHeight = isTablet
+    ? Math.max(560, Math.min(Math.round(winH * 0.62), 880))
+    : Math.max(360, Math.min(520, Math.round(winH * 0.55)));
   /** 标签最多展示 3 行，超出才在标签区滑动 */
   const chipMaxHeight = 40 * 3;
   const [chipContentH, setChipContentH] = useState(0);
@@ -54,6 +60,7 @@ export function ConfirmSiteScreen({ navigation }: Props) {
   const [signOpen, setSignOpen] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [nurseDone, setNurseDone] = useState(!!session.confirmedAt);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'ok' | 'fail'>('idle');
 
   useFocusEffect(
     useCallback(() => {
@@ -250,7 +257,7 @@ export function ConfirmSiteScreen({ navigation }: Props) {
     const confirmedAt = new Date().toISOString();
     const confirmerName =
       session.role === 'family'
-        ? session.familyName.trim() || session.patientName.trim()
+        ? session.familyName.trim() || session.patientName.trim() || '家属'
         : session.patientName.trim();
     const firstPickCorrect = session.reselectCount === 0;
 
@@ -280,12 +287,16 @@ export function ConfirmSiteScreen({ navigation }: Props) {
         synced: false,
       };
       await appendConfirmRecord(record);
-      void uploadRecords([record]);
+      setNurseDone(true);
+      const result = await uploadRecords([record]);
+      setSyncStatus(result.ok ? 'ok' : 'fail');
+      if (!result.ok) {
+        void syncConfirmRecordsToServer();
+      }
     } catch {
       showAlert('本机保存记录失败，不影响本次确认完成');
+      setNurseDone(true);
     }
-
-    setNurseDone(true);
   };
 
   const onPickGuarded = (pick: HighlighterPick) => {
@@ -470,8 +481,7 @@ export function ConfirmSiteScreen({ navigation }: Props) {
                   <>
                     <Text style={styles.signDoneLabel}>
                       {'\u2713 '}
-                      家属 {session.familyName || ''}{' '}
-                      已签字
+                      家属已签字
                       {locked ? '' : '（点这里可重签）'}
                     </Text>
                     <SignaturePreview
@@ -503,6 +513,12 @@ export function ConfirmSiteScreen({ navigation }: Props) {
                 <Text style={styles.doneTip}>
                   这一例已经确认好了。请再对照纸质文书上的手术部位是否一致。点下方回首页，可开始下一例。
                 </Text>
+                {syncStatus === 'ok' ? (
+                  <Text style={styles.syncOk}>已同步到管理后台</Text>
+                ) : null}
+                {syncStatus === 'fail' ? (
+                  <Text style={styles.syncFail}>后台同步未成功，将在下次打开 App 时自动重试</Text>
+                ) : null}
                 <Pressable style={styles.nurseBtn} onPress={goHome}>
                   <Text style={styles.nurseBtnText}>返回首页</Text>
                 </Pressable>
@@ -511,7 +527,7 @@ export function ConfirmSiteScreen({ navigation }: Props) {
               <>
                 {locked ? (
                   <Text style={styles.submittedHint}>
-                    已经提交，不能再改。选错了请点「重新选择」
+                    部位已锁定。请护士点下方「护士确认」，记录才会传到管理后台。
                   </Text>
                 ) : null}
 
@@ -554,7 +570,7 @@ export function ConfirmSiteScreen({ navigation }: Props) {
           <SignatureSheet
             visible={signOpen}
             title="家属签字"
-            signerName={session.familyName}
+            signerName=""
             initialPaths={session.familySignaturePaths}
             onCancel={() => setSignOpen(false)}
             onConfirm={(paths) => {
@@ -808,6 +824,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     marginBottom: 12,
+  },
+  syncOk: {
+    textAlign: 'center',
+    color: '#027a48',
+    fontSize: 13,
+    marginBottom: 10,
+  },
+  syncFail: {
+    textAlign: 'center',
+    color: '#b42318',
+    fontSize: 13,
+    marginBottom: 10,
   },
   actionRow: {
     flexDirection: 'row',

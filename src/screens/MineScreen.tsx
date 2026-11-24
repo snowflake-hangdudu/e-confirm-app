@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getTabBarMetrics } from '../navigation/tabBarLayout';
 import { useSession } from '../context/SessionContext';
 import { colors, radius } from '../theme';
 import { MainTabParamList } from '../types';
@@ -12,6 +13,8 @@ type Props = BottomTabScreenProps<MainTabParamList, 'Mine'>;
 
 export function MineScreen(_props: Props) {
   const { logout, staffUsername, session } = useSession();
+  const insets = useSafeAreaInsets();
+  const tab = getTabBarMetrics(insets.bottom);
 
   const onLogout = () => {
     showAlert('退出登录？', '当前未完成的填写会清空，需要重新登录。', [
@@ -34,7 +37,10 @@ export function MineScreen(_props: Props) {
 
       <ScrollView
         style={styles.body}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[
+          styles.scroll,
+          tab.overlay ? { paddingBottom: 32 + tab.height } : null,
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.sectionTitle}>账号信息</Text>

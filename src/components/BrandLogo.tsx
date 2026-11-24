@@ -5,12 +5,12 @@ type Props = {
   size?: number;
 };
 
-/** 页内使用圆角透明底定稿图标 */
+/** 页内品牌图标：与启动页同源满铺蓝底资源，避免圆角透明底白边 */
 export function BrandLogo({ size = 64 }: Props) {
   return (
     <Image
       source={require('../../assets/brand-icon.png')}
-      style={[styles.logo, { width: size, height: size }]}
+      style={[styles.logo, { width: size, height: size, borderRadius: size * 0.22 }]}
       accessibilityLabel="e确镜"
     />
   );
@@ -19,5 +19,6 @@ export function BrandLogo({ size = 64 }: Props) {
 const styles = StyleSheet.create({
   logo: {
     resizeMode: 'contain',
+    overflow: 'hidden',
   },
 });

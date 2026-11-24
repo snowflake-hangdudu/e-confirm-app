@@ -2,3 +2,6 @@
 export const API_BASE = (
   process.env.EXPO_PUBLIC_API_URL ?? 'http://124.222.62.190/api'
 ).replace(/\/$/, '');
+
+export const STAFF_USER = 'admin';
+export const STAFF_PASS = '123456';

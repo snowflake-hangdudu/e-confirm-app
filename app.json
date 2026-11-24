@@ -6,11 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1865A2"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.hospital.econfirm",
@@ -22,11 +17,12 @@
     },
     "android": {
       "package": "com.hospital.econfirm",
-      "versionCode": 6,
+      "versionCode": 13,
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
         "backgroundColor": "#1865A2",
-        "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
+        "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
@@ -57,7 +53,8 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

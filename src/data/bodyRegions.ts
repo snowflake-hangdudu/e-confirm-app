@@ -6,6 +6,7 @@ import { BodyPart, BodyView } from '../types';
  * 后视图：单列 1–14（不分子区）
  *
  * 说明：正视⑤下肢第 7–12 项原文误写成「左*」，按④上肢左右对称惯例校正为「右*」。
+ * 补充：耳鼻咽喉头颈外科用语（咽喉部 / 鼻部 / 颈部细分）。
  */
 export const BODY_PARTS: BodyPart[] = [
   // —— 正视图 · ①头面部 ——
@@ -23,6 +24,22 @@ export const BODY_PARTS: BodyPart[] = [
   { id: 'f-neck-l', label: '颈左部', view: 'front', zone: '头面部' },
   { id: 'f-neck-r', label: '颈右部', view: 'front', zone: '头面部' },
 
+  // —— 正视图 · 咽喉部（ENT 补充）——
+  { id: 'f-throat-tonsil', label: '扁桃体', view: 'front', zone: '咽喉部' },
+  { id: 'f-throat-adenoid', label: '腺样体', view: 'front', zone: '咽喉部' },
+  { id: 'f-throat-pharynx', label: '咽部', view: 'front', zone: '咽喉部' },
+  { id: 'f-throat-larynx', label: '喉部/声带', view: 'front', zone: '咽喉部' },
+
+  // —— 正视图 · 鼻部（ENT 细分）——
+  { id: 'f-nose-septum', label: '鼻腔/鼻中隔', view: 'front', zone: '鼻部' },
+  { id: 'f-nose-turbinate', label: '鼻甲', view: 'front', zone: '鼻部' },
+  { id: 'f-nose-sinus', label: '鼻窦', view: 'front', zone: '鼻部' },
+
+  // —— 正视图 · 颈部（ENT 补充）——
+  { id: 'f-neck-thyroid', label: '甲状腺', view: 'front', zone: '颈部' },
+  { id: 'f-neck-parathyroid', label: '甲状旁腺', view: 'front', zone: '颈部' },
+  { id: 'f-neck-lymph', label: '颈部淋巴结', view: 'front', zone: '颈部' },
+
   // —— 正视图 · ②胸部 ——
   { id: 'f-chest-l', label: '左胸', view: 'front', zone: '胸部' },
   { id: 'f-chest-r', label: '右胸', view: 'front', zone: '胸部' },
@@ -39,7 +56,7 @@ export const BODY_PARTS: BodyPart[] = [
   { id: 'f-abd-l', label: '下腹部', view: 'front', zone: '腹部' },
   { id: 'f-abd-ll', label: '左下腹', view: 'front', zone: '腹部' },
 
-  // —— 正视图 · ④上肢（文档无「腕」）——
+  // —— 正视图 · ④上肢 ——
   { id: 'f-shoulder-l', label: '左肩', view: 'front', zone: '上肢' },
   { id: 'f-upperarm-l', label: '左上臂', view: 'front', zone: '上肢' },
   { id: 'f-elbow-l', label: '左肘', view: 'front', zone: '上肢' },
@@ -88,6 +105,9 @@ export const BODY_PARTS: BodyPart[] = [
 /** 文档分区展示名 */
 export const ZONE_LABELS: Record<string, string> = {
   头面部: '①头面部',
+  咽喉部: '咽喉部',
+  鼻部: '鼻部',
+  颈部: '颈部',
   胸部: '②胸部',
   腹部: '③腹部',
   上肢: '④上肢',

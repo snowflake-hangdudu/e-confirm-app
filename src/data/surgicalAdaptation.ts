@@ -234,6 +234,57 @@ const FRONT_NECK_PATHS: Record<string, PathsAdapt> = {
   },
 };
 
+/** 鼻细分共用：鼻根窄、鼻梁直、鼻翼略宽；比上一版收窄 */
+const ENT_NOSE_CLIP: ClipAdapt = {
+  kind: 'clip',
+  muscles: ['head'],
+  fillMask: true,
+  mask: {
+    d: 'M360 176 C362 174 364 174 366 176 C367 190 368 204 370 214 C368 218 364 220 362 220 C360 220 356 218 354 214 C356 204 358 190 360 176 Z',
+  },
+  maskFemale: {
+    d: 'M332 140 C334 138 336 138 338 140 C339 152 340 164 342 172 C340 176 337 178 335 178 C333 178 330 176 328 172 C330 164 331 152 332 140 Z',
+  },
+};
+
+function neckPaths(g: 'male' | 'female') {
+  return g === 'female' ? FEMALE_FRONT_MUSCLE_PATHS : MALE_FRONT_MUSCLE_PATHS;
+}
+
+/** 咽喉共用：库 neck 正中子路径（颈前三角，沿斜方肌内侧纹路） */
+const ENT_THROAT_PATHS: PathsAdapt = {
+  kind: 'paths',
+  resolve: (g) => [...(neckPaths(g).neck?.common ?? [])],
+};
+
+/** 颈前共用：库 neck 正中（甲状腺/甲状旁腺） */
+const ENT_NECK_FRONT_PATHS: PathsAdapt = {
+  kind: 'paths',
+  resolve: (g) => [...(neckPaths(g).neck?.common ?? [])],
+};
+
+/** 颈侧共用：库 neck 左/右子路径（淋巴结，沿胸锁乳突肌纹路） */
+const ENT_NECK_SIDE_PATHS: PathsAdapt = {
+  kind: 'paths',
+  resolve: (g) => [
+    ...(neckPaths(g).neck?.left ?? []),
+    ...(neckPaths(g).neck?.right ?? []),
+  ],
+};
+
+const FRONT_ENT_FILL: Record<string, PartAdapt> = {
+  'f-nose-septum': ENT_NOSE_CLIP,
+  'f-nose-turbinate': ENT_NOSE_CLIP,
+  'f-nose-sinus': ENT_NOSE_CLIP,
+  'f-throat-adenoid': ENT_NOSE_CLIP,
+  'f-throat-tonsil': ENT_THROAT_PATHS,
+  'f-throat-pharynx': ENT_THROAT_PATHS,
+  'f-throat-larynx': ENT_THROAT_PATHS,
+  'f-neck-thyroid': ENT_NECK_FRONT_PATHS,
+  'f-neck-parathyroid': ENT_NECK_FRONT_PATHS,
+  'f-neck-lymph': ENT_NECK_SIDE_PATHS,
+};
+
 /** 整头：库原生高亮，对齐最稳 */
 const FRONT_HEAD_MUSCLE: Record<string, MuscleAdapt> = {
   'f-head': { kind: 'muscle', slug: 'head' },
@@ -318,7 +369,14 @@ const FRONT_CLIP: Record<string, ClipAdapt> = {
 function limbAdapt(partId: string): MuscleAdapt | null {
   const part = getPartById(partId);
   if (!part || part.view !== 'front') return null;
-  if (part.zone === '腹部' || part.zone === '胸部' || part.zone === '头面部') {
+  if (
+    part.zone === '腹部' ||
+    part.zone === '胸部' ||
+    part.zone === '头面部' ||
+    part.zone === '咽喉部' ||
+    part.zone === '鼻部' ||
+    part.zone === '颈部'
+  ) {
     return null;
   }
 
@@ -347,6 +405,7 @@ function limbAdapt(partId: string): MuscleAdapt | null {
 
 export function getPartAdapt(partId: string): PartAdapt | null {
   if (FRONT_ABD_PATHS[partId]) return FRONT_ABD_PATHS[partId];
+  if (FRONT_ENT_FILL[partId]) return FRONT_ENT_FILL[partId];
   if (FRONT_CHEST_MUSCLE[partId]) return FRONT_CHEST_MUSCLE[partId];
   if (FRONT_CHEST_PATHS[partId]) return FRONT_CHEST_PATHS[partId];
   if (FRONT_HEAD_MUSCLE[partId]) return FRONT_HEAD_MUSCLE[partId];
@@ -540,6 +599,9 @@ export function buildAdaptation(
     }
   }
 
+  const filledMaskKeys = new Set<string>();
+  const filledPathKeys = new Set<string>();
+
   for (const id of partIds) {
     if (coveredByLib.has(id)) continue;
     const adapt = getPartAdapt(id);
@@ -547,12 +609,18 @@ export function buildAdaptation(
     if (adapt.kind === 'muscle') {
       pushLibFill(bodyData, adapt.slug, adapt.side);
     } else if (adapt.kind === 'paths') {
-      clips.push({ partId: id, paths: adapt.resolve(gender) });
+      const paths = adapt.resolve(gender);
+      const pathKey = paths.join('|');
+      if (filledPathKeys.has(pathKey)) continue;
+      filledPathKeys.add(pathKey);
+      clips.push({ partId: id, paths });
     } else if (adapt.fillMask) {
       const mask =
         gender === 'female' && adapt.maskFemale
           ? adapt.maskFemale
           : adapt.mask;
+      if (filledMaskKeys.has(mask.d)) continue;
+      filledMaskKeys.add(mask.d);
       clips.push({
         partId: id,
         paths: [],

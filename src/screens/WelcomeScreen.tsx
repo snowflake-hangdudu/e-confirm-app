@@ -8,12 +8,14 @@ import {
   ScrollView,
   Modal,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSession } from '../context/SessionContext';
+import { getTabBarMetrics } from '../navigation/tabBarLayout';
 import { DEPARTMENTS } from '../data/bodyRegions';
 import { ScreenBackground } from '../components/ScreenBackground';
 import { colors, spacing } from '../theme';
@@ -26,6 +28,8 @@ type Props = NativeStackScreenProps<ConfirmStackParamList, 'Welcome'>;
 
 export function WelcomeScreen({ navigation }: Props) {
   const { session, setRole, update } = useSession();
+  const insets = useSafeAreaInsets();
+  const tab = getTabBarMetrics(insets.bottom);
   const [picker, setPicker] = useState<'dept' | null>(null);
   const [deptQuery, setDeptQuery] = useState('');
 
@@ -38,10 +42,7 @@ export function WelcomeScreen({ navigation }: Props) {
     return () => clearTimeout(t);
   }, [navigation, setRole, update]);
 
-  const canStart =
-    session.patientName.trim().length > 0 &&
-    session.admissionNo.trim().length > 0 &&
-    (session.role === 'patient' || session.familyName.trim().length > 0);
+  const canStart = session.admissionNo.trim().length > 0;
 
   const filteredDepts = DEPARTMENTS.filter((d) =>
     d.includes(deptQuery.trim()),
@@ -57,22 +58,26 @@ export function WelcomeScreen({ navigation }: Props) {
     setDeptQuery('');
   };
 
+  const onStart = () => {
+    navigation.navigate('ConfirmSite');
+  };
+
   return (
     <ScreenBackground>
       <SafeAreaView style={styles.safe} edges={['top']}>
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior="padding"
+          enabled={Platform.OS === 'ios'}
           keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
         >
           <ScrollView
             style={styles.flex}
             contentContainerStyle={styles.scroll}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             showsVerticalScrollIndicator={false}
           >
-          <View style={styles.pageBody}>
-          <View>
           <Text style={styles.pageTitle}>开始确认</Text>
           <Text style={styles.pageSub}>
             访视护士引导 · 选择身份并填写患者信息
@@ -166,16 +171,6 @@ export function WelcomeScreen({ navigation }: Props) {
             <Text style={styles.value}>{session.department}</Text>
           </Pressable>
           <View style={styles.field}>
-            <Text style={styles.label}>姓名</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="请输入患者姓名"
-              placeholderTextColor={colors.muted}
-              value={session.patientName}
-              onChangeText={(patientName) => update({ patientName })}
-            />
-          </View>
-          <View style={styles.field}>
             <Text style={styles.label}>住院号</Text>
             <TextInput
               style={styles.input}
@@ -184,33 +179,31 @@ export function WelcomeScreen({ navigation }: Props) {
               value={session.admissionNo}
               onChangeText={(admissionNo) => update({ admissionNo })}
               autoCapitalize="characters"
+              returnKeyType="done"
+              blurOnSubmit
+              onSubmitEditing={() => {
+                if (canStart) onStart();
+                else Keyboard.dismiss();
+              }}
             />
           </View>
-          {session.role === 'family' ? (
-            <View style={styles.field}>
-              <Text style={styles.label}>家属姓名</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="确认人姓名（家属）"
-                placeholderTextColor={colors.muted}
-                value={session.familyName}
-                onChangeText={(familyName) => update({ familyName })}
-              />
-            </View>
-          ) : null}
-          </View>
-
+          </ScrollView>
+          <View
+            style={[
+              styles.footer,
+              tab.overlay ? { paddingBottom: 8 + tab.height } : null,
+            ]}
+          >
           <Pressable
             style={[styles.cta, !canStart && styles.ctaDisabled]}
             disabled={!canStart}
-            onPress={() => navigation.navigate('ConfirmSite')}
+            onPress={onStart}
           >
             <Text style={[styles.ctaText, !canStart && styles.ctaTextDisabled]}>
               开始确认
             </Text>
           </Pressable>
           </View>
-        </ScrollView>
         </KeyboardAvoidingView>
 
         <Modal visible={picker !== null} transparent animationType="fade">
@@ -259,14 +252,9 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: 'transparent' },
   flex: { flex: 1 },
   scroll: {
-    flexGrow: 1,
-  },
-  pageBody: {
-    flexGrow: 1,
     paddingHorizontal: spacing.md,
     paddingTop: 8,
-    paddingBottom: 24,
-    justifyContent: 'space-between',
+    paddingBottom: 12,
   },
   pageTitle: { fontSize: 25, fontWeight: '800', color: colors.ink },
   pageSub: {
@@ -366,7 +354,6 @@ const styles = StyleSheet.create({
     minHeight: 28,
   },
   cta: {
-    marginTop: 8,
     backgroundColor: colors.primary,
     borderRadius: 14,
     paddingVertical: 14,
@@ -376,6 +363,12 @@ const styles = StyleSheet.create({
   ctaDisabled: { backgroundColor: '#E2E8F0' },
   ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   ctaTextDisabled: { color: colors.muted },
+  footer: {
+    paddingHorizontal: spacing.md,
+    paddingTop: 8,
+    paddingBottom: 16,
+    backgroundColor: 'transparent',
+  },
   modalMask: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.35)',

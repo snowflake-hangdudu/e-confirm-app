@@ -9,10 +9,10 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SessionState, Role } from '../types';
-import { authenticateAndSync, clearApiToken } from '../api/server';
+import { authenticateAndSync, clearApiToken, syncConfirmRecordsToServer } from '../api/server';
+import { STAFF_PASS, STAFF_USER } from '../config';
+import { AppState } from 'react-native';
 
-const STAFF_USER = 'admin';
-const STAFF_PASS = '123456';
 const STORAGE_KEY = 'econfirm.session.v1';
 
 export const initialSession: SessionState = {
@@ -98,6 +98,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       () => {},
     );
   }, [readyToPersist, isLoggedIn, staffUsername, session]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        void syncConfirmRecordsToServer();
+      }
+    });
+    return () => sub.remove();
+  }, [isLoggedIn]);
 
   const clearPersist = useCallback(async () => {
     skipNextPersist.current = true;

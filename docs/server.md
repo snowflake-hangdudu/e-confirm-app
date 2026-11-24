@@ -73,12 +73,16 @@ ssh ubuntu@124.222.62.190
 
 | 项 | 地址 |
 |---|---|
-| 管理后台 | http://124.222.62.190 |
+| **Android App 下载（固定）** | http://124.222.62.190/download/equejing-android.apk |
+| 带版本号备份 | http://124.222.62.190/download/equejing-android-v1.0.0.apk |
+| **管理后台** | http://124.222.62.190 |
 | 健康检查 | http://124.222.62.190/api/health |
 | 登录 | `POST /api/auth/login` |
 | 同步记录 | `POST /api/records` |
 
 试用账号：`admin` / `123456`。
+
+APK 文件目录：`/var/www/econfirm/downloads/`。更新包：`python scripts/upload-apk.py`（在 App 仓库执行）。
 
 部署目录：API `/var/www/econfirm/api`，管理端 `/var/www/econfirm/web`。
 

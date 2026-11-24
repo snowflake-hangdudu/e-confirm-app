@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ConfirmStack } from './ConfirmStack';
+import { getTabBarMetrics } from './tabBarLayout';
 import { MineScreen } from '../screens/MineScreen';
 import { MainTabParamList } from '../types';
 import { colors } from '../theme';
@@ -13,14 +14,19 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainTabs() {
   const insets = useSafeAreaInsets();
-  const bottomPad = Platform.OS === 'web' ? 8 : Math.max(insets.bottom, 8);
+  const tab = getTabBarMetrics(insets.bottom);
   const tabBarStyle = {
     ...styles.tabBar,
-    height: Platform.OS === 'web' ? 64 : 62 + bottomPad,
-    paddingBottom: bottomPad,
-    ...(Platform.OS === 'web'
-      ? { position: 'relative' as const, bottom: 'auto' as const }
-      : null),
+    height: tab.height,
+    paddingBottom: tab.bottomPad,
+    ...(tab.overlay
+      ? {
+          position: 'absolute' as const,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }
+      : { position: 'relative' as const, bottom: 'auto' as const }),
   };
 
   return (
@@ -36,7 +42,7 @@ export function MainTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.tabInactive,
         tabBarItemStyle: styles.tabItem,
-        tabBarHideOnKeyboard: true,
+        tabBarHideOnKeyboard: false,
       }}
     >
       <Tab.Screen
@@ -56,7 +62,9 @@ export function MainTabs() {
                 color={color}
               />
             ),
-            tabBarStyle: hideTab ? { display: 'none' } : tabBarStyle,
+            tabBarStyle: hideTab
+              ? { ...tabBarStyle, display: 'none' }
+              : tabBarStyle,
           };
         }}
       />

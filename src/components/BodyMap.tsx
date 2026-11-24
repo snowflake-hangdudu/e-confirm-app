@@ -26,7 +26,10 @@ type Props = {
   onPick: (pick: HighlighterPick) => void;
 };
 
-const TIP_H = 20;
+const TIP_H = 36;
+const SIDE_LABEL_W = 26;
+/** 仅兜底，实际由容器撑满；平板大图区可到 2.4 */
+const MAX_SCALE = 2.4;
 
 /**
  * 精细高亮：与 Body 同性别 viewBox、同像素尺寸，路径与库同源 → 天然对齐
@@ -134,10 +137,17 @@ export function BodyMap({
 
   const scale =
     box.w > 0 && box.h > TIP_H
-      ? Math.min(box.w / 200, (box.h - TIP_H) / 400, 1.35) * 0.98
-      : 1.1;
+      ? Math.min(
+          (box.w - SIDE_LABEL_W * 2) / 200,
+          (box.h - TIP_H) / 400,
+          MAX_SCALE,
+        ) * 0.98
+      : 1.2;
   const bodyW = 200 * scale;
   const bodyH = 400 * scale;
+  /** 正视图与患者相对：画面左=患者右；后视图与患者同向 */
+  const leftSideLabel = view === 'front' ? '右' : '左';
+  const rightSideLabel = view === 'front' ? '左' : '右';
 
   const onBodyPress = (part: ExtendedBodyPart, side?: 'left' | 'right') => {
     if (!part.slug) return;
@@ -163,22 +173,30 @@ export function BodyMap({
     <View style={styles.wrap} onLayout={onLayout}>
       {box.w > 0 && (
         <>
-          <View style={[styles.figure, { width: bodyW, height: bodyH }]}>
-            <Body
-              data={bodyData}
-              gender={gender}
-              side={view}
-              scale={scale}
-              border="#B8B8B8"
-              defaultFill="#3f3f3f"
-              onBodyPartPress={onBodyPress}
-            />
-            {clips.length > 0 && view === 'front' && (
-              <FineHighlights clips={clips} scale={scale} gender={gender} />
-            )}
+          <View style={styles.figureRow}>
+            <Text style={styles.sideLabel} pointerEvents="none">
+              {leftSideLabel}
+            </Text>
+            <View style={[styles.figure, { width: bodyW, height: bodyH }]}>
+              <Body
+                data={bodyData}
+                gender={gender}
+                side={view}
+                scale={scale}
+                border="#B8B8B8"
+                defaultFill="#3f3f3f"
+                onBodyPartPress={onBodyPress}
+              />
+              {clips.length > 0 && view === 'front' && (
+                <FineHighlights clips={clips} scale={scale} gender={gender} />
+              )}
+            </View>
+            <Text style={styles.sideLabel} pointerEvents="none">
+              {rightSideLabel}
+            </Text>
           </View>
           <Text style={styles.tip} pointerEvents="none">
-            示意图 · 点选部位 · 以文书为准
+            示意图 · 左右为患者自身 · 点选部位 · 以文书为准
           </Text>
         </>
       )}
@@ -240,8 +258,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    paddingHorizontal: 4,
-    paddingVertical: 4,
+    paddingHorizontal: 2,
+    paddingVertical: 2,
+  },
+  figureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sideLabel: {
+    width: SIDE_LABEL_W,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.ink,
+    lineHeight: 22,
   },
   figure: {
     position: 'relative',

@@ -147,9 +147,8 @@ function filterBySlug(
     switch (slug) {
       case 'head':
       case 'hair':
-        return list.filter((p) => !p.label.includes('颈'));
       case 'neck':
-        return match(['颈']);
+        return list;
       case 'chest':
         return match(['胸', '乳', '胸骨']);
       case 'abs':
@@ -249,8 +248,28 @@ function applySideFilter(list: BodyPart[], pick: HighlighterPick): BodyPart[] {
   return list.filter((p) => p.label.includes(pick.side!));
 }
 
+function partsForPick(pick: HighlighterPick): BodyPart[] {
+  if (pick.view === 'front') {
+    if (pick.slug === 'head' || pick.slug === 'hair') {
+      return [
+        ...partsByZone('front', '头面部').filter((p) => !p.label.includes('颈')),
+        ...partsByZone('front', '鼻部'),
+        ...partsByZone('front', '咽喉部').filter((p) => p.id === 'f-throat-adenoid'),
+      ];
+    }
+    if (pick.slug === 'neck') {
+      return [
+        ...partsByZone('front', '头面部').filter((p) => p.label.includes('颈')),
+        ...partsByZone('front', '颈部'),
+        ...partsByZone('front', '咽喉部').filter((p) => p.id !== 'f-throat-adenoid'),
+      ];
+    }
+  }
+  return partsByZone(pick.view, pick.zone);
+}
+
 export function filterPartsForPick(pick: HighlighterPick): BodyPart[] {
-  const zoneList = partsByZone(pick.view, pick.zone);
+  const zoneList = partsForPick(pick);
   const sided = applySideFilter(zoneList, pick);
   // slug=custom：按分区(+侧)列出该区全部用语（如腹部九分）
   if ((pick.slug as string) === 'custom' || !pick.slug) {
@@ -268,6 +287,10 @@ function skipMuscleFill(part: BodyPart): boolean {
     if (part.label.includes('颈')) return false;
     return true;
   }
+  if (part.view === 'front' && (part.zone === '咽喉部' || part.zone === '鼻部')) {
+    return true;
+  }
+  if (part.view === 'front' && part.zone === '颈部') return true;
   if (part.view === 'front' && part.zone === '胸部') return true;
   return false;
 }
@@ -286,7 +309,11 @@ function partToHighlightItem(part: BodyPart): ExtendedBodyPart | null {
   let slug: Slug = 'abs';
 
   if (part.view === 'front') {
-    if (part.zone === '头面部') {
+    if (part.zone === '咽喉部' || part.zone === '鼻部') {
+      slug = 'head';
+    } else if (part.zone === '颈部') {
+      slug = 'neck';
+    } else if (part.zone === '头面部') {
       slug = part.label.includes('颈') ? 'neck' : 'head';
     } else if (part.zone === '胸部') {
       slug = 'chest';
